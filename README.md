@@ -1,8 +1,8 @@
 # traceX
 # 🕵️‍♂️ traceX
 
-![traceX Banner]([https://i.imgur.com/3hK0j9v.png](https://files.catbox.moe/t8mobk.jpg))  
-![traceX Hacker Banner](https://i.imgur.com/YOUR_SECOND_BANNER.png)  
+![traceX Banner]([https://files.catbox.moe/t8mobk.jpg](https://files.catbox.moe/t8mobk.jpg))  
+![traceX Hacker Banner](https://files.catbox.moe/t8mobk.jpg)  
 
 **traceX** is a **Termux-based hacker tool** for network scanning, camera detection, IP lookup, and more. It comes with **matrix-style terminal animations**, hacker logs, and a fully interactive menu.  
 
